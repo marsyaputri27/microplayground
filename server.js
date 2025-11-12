@@ -1,4 +1,5 @@
 // server.js
+import 'dotenv/config';
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -15,6 +16,6 @@ app.use(express.static(__dirname));
 // Route untuk API Gemini
 app.post("/api/gemini", handler);
 
-// Jalankan server di port 3000
-const PORT = 3000;
+// Jalankan server (PORT dari env bila tersedia)
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server jalan di http://localhost:${PORT}`));
