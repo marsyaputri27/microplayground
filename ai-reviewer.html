@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Reviewer IoT</title>
+  <style>
+    :root{ --bg:#0d1228; --card:#101634; --text:#e8ecff; --muted:#a3b0d8; --border:#22305a; --accent:#22d3ee; --accent2:#7c3aed; }
+    html,body{ height:100%; }
+    body{ margin:0; color:var(--text); background:linear-gradient(180deg,#0d1228,#0b1020); font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif; }
+    .wrap{ height:100%; width:100%; margin:0; padding:0; display:flex; align-items:stretch; justify-content:center; }
+    .card{ position:relative; width:100%; max-width:980px; margin:auto; display:flex; flex-direction:column; height:100%; background:linear-gradient(180deg, #12183a, #0d1230); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,.5); }
+    .card::before{ content:""; position:absolute; inset:0; border-radius:16px; background:linear-gradient(135deg, var(--accent), var(--accent2), #f59e0b, var(--accent)); filter:blur(12px); opacity:.25; pointer-events:none; }
+    .head{ position:relative; display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--border); background:linear-gradient(180deg, rgba(19,26,61,.85), rgba(15,20,49,.85)); z-index:1; }
+    .brand{ display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px; }
+    .avatar{ width:28px; height:28px; border-radius:999px; position:relative; display:inline-block; }
+    .avatar::before{ content:""; position:absolute; inset:0; border-radius:999px; background:linear-gradient(135deg, var(--accent), var(--accent2)); filter:blur(6px); opacity:.7; }
+    .avatar::after{ content:""; position:absolute; inset:1px; border-radius:999px; background:linear-gradient(180deg, #141a3e, #0f1534); border:1px solid var(--border); }
+    .title{ margin:0; font-size:16px; text-transform:uppercase; letter-spacing:.6px; }
+    .role{ font-size:11px; color:#7dd3fc; margin-left:8px; letter-spacing:.6px; }
+    .online{ margin-left:8px; font-size:10px; color:#22d3ee; padding:2px 6px; border-radius:999px; border:1px solid #1f7e91; background:rgba(9,24,34,.6); text-transform:uppercase; letter-spacing:.6px; }
+    .badge{ display:inline-block; margin-left:6px; padding:4px 8px; border-radius:999px; font-size:11px; color:#93c5fd; background:#0b1b2b; border:1px solid #1d4ed8; }
+    .toolbar{ display:flex; align-items:center; gap:12px; font-size:12px; color:var(--muted); }
+    .note{ color:var(--muted); }
+    .switch{ display:inline-flex; align-items:center; gap:8px; }
+    .switch input{ appearance:none; width:38px; height:22px; border-radius:999px; background:#1b2545; position:relative; outline:none; border:1px solid var(--border); cursor:pointer; }
+    .switch input::after{ content:""; position:absolute; left:2px; top:2px; width:18px; height:18px; border-radius:50%; background:#0f1431; border:1px solid var(--border); transition:transform .2s; box-shadow:0 0 10px rgba(34,211,238,.25); }
+    .switch input:checked{ background:#1b2a5a; border-color:#3156b0; }
+    .switch input:checked::after{ transform:translateX(16px); background:linear-gradient(180deg,#182258,#0f1431); }
+    .chat{ position:relative; z-index:1; padding:16px; flex:1; overflow:auto; display:flex; flex-direction:column; gap:10px; background:radial-gradient(1200px 600px at 80% -10%, #1a2147 0, transparent 40%), linear-gradient(180deg, rgba(18,24,58,.45), rgba(12,18,42,.5)); mask-image: linear-gradient(180deg, rgba(0,0,0,.85), rgba(0,0,0,1)); }
+    .chat::after{ content:""; position:absolute; inset:0; pointer-events:none; background:repeating-linear-gradient( to bottom, rgba(255,255,255,.04) 0 1px, transparent 2px 4px ); opacity:.12; }
+    .chat::-webkit-scrollbar{ width:8px; height:8px; }
+    .chat::-webkit-scrollbar-thumb{ background:#1f2b52; border-radius:8px; }
+    .msg{ max-width:78%; padding:12px 14px; border-radius:14px; white-space:pre-wrap; word-wrap:break-word; border:1px solid var(--border); box-shadow:0 8px 24px rgba(0,0,0,.25); backdrop-filter: blur(2px); }
+    .me{ align-self:flex-end; color:#eaf2ff; background:linear-gradient(180deg,#1b2a55,#16264b); border-color:#2a3d74; box-shadow:0 10px 26px rgba(0,0,0,.35), 0 0 0 1px rgba(124,58,237,.25) inset; }
+    .ai{ align-self:flex-start; background:linear-gradient(180deg,#0f1a2e,#0b1426); border-color:#0d6e77; box-shadow:0 10px 30px rgba(34,211,238,.15); }
+    .sys{ align-self:center; background:#0c1f19; color:#bbf7d0; border-color:#0b5a43; font-size:12px; }
+    .err{ align-self:center; background:#1f0d14; color:#fecaca; border-color:#7f1d1d; font-size:12px; }
+    .ts{ font-size:12px; color:#7dd3fc; opacity:.8; margin:4px 6px 8px; }
+    .ts.ts-me{ align-self:flex-end; }
+    .ts.ts-ai{ align-self:flex-start; }
+    .code{
+      font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background:#0b1220;
+      border:1px solid #1f2937;
+      border-radius:12px;
+      padding:12px;
+      margin-top:8px;
+      color:#e5e7eb;
+      display:block;
+      width:100%; /* panjang penuh agar jelas */
+      align-self:stretch;
+      white-space:pre-wrap; /* bungkus baris panjang */
+      word-break:break-word;
+      overflow:auto;
+      min-height:160px; /* pastikan cukup tinggi terlihat */
+      max-height:60vh; /* cukup tinggi untuk lihat banyak baris */
+      line-height:1.45;
+      font-size:12.5px;
+      box-shadow: inset 0 0 0 1px rgba(124,58,237,.15);
+    }
+    .chat .code { margin-left: 0; margin-right: 0; box-sizing: border-box; }
+    /* Typing indicator */
+    .typing{ display:inline-flex; gap:6px; align-items:center; }
+    .typing span{ width:6px; height:6px; border-radius:50%; background:#78d9ff; opacity:.6; animation: blink 1.2s infinite; box-shadow:0 0 8px rgba(34,211,238,.45); }
+    .typing .d2{ animation-delay:.2s; }
+    .typing .d3{ animation-delay:.4s; }
+    @keyframes blink{ 0%, 80%, 100%{ opacity:.25 } 40%{ opacity:1 } }
+    .row{ display:flex; gap:10px; align-items:flex-end; padding:10px; margin:0 12px 12px; border:1px solid var(--border); background:linear-gradient(180deg,#0f1431,#0d1228); z-index:1; border-radius:14px; box-shadow:0 10px 24px rgba(0,0,0,.35), inset 0 0 0 1px rgba(124,58,237,.15); }
+    .input{ flex:1; }
+    textarea#msg{ width:100%; min-height:48px; max-height:160px; resize:vertical; background:#0b1220; color:#e5e7eb; border:1px solid var(--border); border-radius:12px; padding:12px 14px; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif; }
+    textarea#msg::placeholder{ color:#8ba0cf; }
+    button.send{ width:44px; height:44px; display:inline-flex; align-items:center; justify-content:center; position:relative; background:linear-gradient(135deg, var(--accent), var(--accent2)); color:#fff; border:0; border-radius:12px; font-weight:800; cursor:pointer; box-shadow:0 6px 16px rgba(34,211,238,.25); }
+    button.send:disabled{ opacity:.6; cursor:not-allowed; }
+    button.send svg{ display:block; }
+    .small{ font-size:12px; color:var(--muted); margin-top:6px; }
+    @media (max-width: 860px){ .card{ max-width:100%; border-radius:0; } .card::before{ border-radius:0; } }
+
+    /* Embed mode (when loaded inside panel) */
+    body.embed .card{ background:transparent; border:0; border-radius:0; box-shadow:none; }
+    body.embed .card::before{ display:none; }
+    body.embed .head{ display:none; }
+    body.embed .row{ margin:10px; border-radius:12px; }
+    body.embed .wrap{ padding:0; }
+  </style>
+</head>
+<body>
+  <script>
+    (function(){ try{ if (new URLSearchParams(location.search).has('embed')) document.body.classList.add('embed'); }catch(_){} })();
+  </script>
+  <div class="wrap">
+    <div class="card">
+      <div class="head">
+        <div class="brand">
+          <span class="avatar" aria-hidden="true"></span>
+          <h2 class="title">AI Reviewer IoT <span class="role">Assistant</span> <span class="online">Online</span> <span class="badge">Gratis · 200/jam</span></h2>
+        </div>
+        <div class="toolbar">
+          <label class="switch"><input id="cloudToggle" type="checkbox" checked aria-label="Gunakan Gemini"><span>Cloud</span></label>
+          <span id="quota" class="note"></span>
+        </div>
+      </div>
+      <div id="chat" class="chat"></div>
+      <div class="row">
+        <div class="input">
+          <textarea id="msg" placeholder="Ketik pesan Anda..." spellcheck="false"></textarea>
+          <div class="small">Tips: Paste kode lengkap (ada <code>setup()</code>/<code>loop()</code>) agar bisa otomatis diperiksa & diperbaiki.</div>
+        </div>
+        <button id="send" class="send" aria-label="Kirim"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M2 21l19-9L2 3l3 7 8 2-8 2-3 7z"/></svg></button>
+      </div>
+    </div>
+    
+  </div>
+
+  <script>
+  // === RATE LIMIT (client-side) ===
+  const RATE_ALL_KEY   = 'iot_assistant_rate_all';
+  const RATE_CLOUD_KEY = 'iot_assistant_rate_cloud';
+  const MAX_ALL = 200;      // total pertanyaan/jam (UI)
+  const MAX_CLOUD = 100;    // panggilan ke server/jam
+
+  function bumpAndCheck(key, max){
+    const now = Date.now();
+    const hourAgo = now - 60*60*1000;
+    let arr = [];
+    try { arr = JSON.parse(localStorage.getItem(key) || '[]'); } catch {}
+    arr = arr.filter(t => t > hourAgo);
+    const ok = arr.length < max;
+    if (ok) { arr.push(now); localStorage.setItem(key, JSON.stringify(arr)); }
+    return { ok, left: Math.max(0, max - arr.length) };
+  }
+
+  function peekQuota(key, max){
+    const now = Date.now();
+    const hourAgo = now - 60*60*1000;
+    let arr = [];
+    try { arr = JSON.parse(localStorage.getItem(key) || '[]'); } catch {}
+    arr = arr.filter(t => t > hourAgo);
+    return { used: arr.length, left: Math.max(0, max - arr.length) };
+  }
+
+  function updateQuotaUI(){
+    const a = peekQuota(RATE_ALL_KEY, MAX_ALL);
+    const c = peekQuota(RATE_CLOUD_KEY, MAX_CLOUD);
+    const el = document.getElementById('quota');
+    if (el) el.textContent = `Kuota: ${a.left}/${MAX_ALL} lokal · ${c.left}/${MAX_CLOUD} cloud (per jam)`;
+  }
+
+  // === UI helpers ===
+  const chat = document.getElementById('chat');
+  const input = document.getElementById('msg');
+  const sendBtn = document.getElementById('send');
+  const cloudToggle = document.getElementById('cloudToggle');
+
+  function addBubble(text, type='ai'){
+    const b = document.createElement('div');
+    b.className = `msg ${type}`;
+    b.textContent = text;
+    chat.appendChild(b);
+    if (type !== 'sys') {
+      const ts = document.createElement('div');
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2,'0');
+      const mm = String(d.getMinutes()).padStart(2,'0');
+      ts.textContent = `${hh}:${mm}`;
+      ts.className = `ts ${type==='me' ? 'ts-me' : 'ts-ai'}`;
+      chat.appendChild(ts);
+    }
+    chat.scrollTop = chat.scrollHeight;
+  }
+  function addCodeBlock(code){
+    const pre = document.createElement('pre');
+    pre.className = 'code';
+    pre.textContent = code;
+    chat.appendChild(pre);
+    chat.scrollTop = chat.scrollHeight;
+  }
+  function showTyping(){
+    const el = document.createElement('div');
+    el.className = 'msg ai typing';
+    el.innerHTML = '<span class="d1"></span><span class="d2"></span><span class="d3"></span>';
+    chat.appendChild(el);
+    chat.scrollTop = chat.scrollHeight;
+    return el;
+  }
+  function hideTyping(el){ if (el && el.parentNode) el.parentNode.removeChild(el); }
+
+  // === Deteksi cepat kode Arduino ===
+  function isArduinoCode(text){
+    const t = text.trim();
+    const signals = [/\bvoid\s+setup\s*\(/, /\bvoid\s+loop\s*\(/, /#include\s+<.*>/, /pinMode\s*\(/, /digitalWrite\s*\(/, /analog(Read|Write)\s*\(/];
+    return signals.some(r => r.test(t));
+  }
+
+  // === Analisis ringan Arduino (lokal) ===
+  function analyzeArduino(src){
+    const report = { issues: [], tips: [], fixes: [], corrected: null, explain: [] };
+    const text = src;
+
+    const hasSetup = /\bvoid\s+setup\s*\(/.test(text);
+    const hasLoop  = /\bvoid\s+loop\s*\(/.test(text);
+    if (!hasSetup) report.issues.push('Tidak ada fungsi setup().');
+    if (!hasLoop)  report.issues.push('Tidak ada fungsi loop().');
+
+    const usesSerial = /\bSerial\s*\./.test(text);
+    const hasSerialBegin = /Serial\.begin\s*\(/.test(text);
+    if (usesSerial && !hasSerialBegin)
+      report.issues.push('Menggunakan Serial tetapi belum memanggil Serial.begin() di setup().');
+
+    const includes = (text.match(/#include\s+<[^>]+>/g) || []).map(s=>s.toLowerCase());
+    const uses = { dht:/\bDHT\b/.test(text), servo:/\bServo\b/.test(text), wifi:/\bWiFi\b/.test(text) };
+    if (uses.dht && !includes.some(s=>s.includes('<dht.h>'))) report.issues.push('Objek DHT dipakai tapi #include <DHT.h> tidak ditemukan.');
+    if (uses.servo && !includes.some(s=>s.includes('<servo.h>'))) report.issues.push('Kelas Servo dipakai tapi #include <Servo.h> tidak ditemukan.');
+    if (uses.wifi && !includes.some(s=>s.includes('<wifi.h>'))) report.tips.push('Untuk ESP32/ESP8266 pastikan #include <WiFi.h> atau <ESP8266WiFi.h>.');
+
+    const writes = [...text.matchAll(/\b(digitalWrite|analogWrite)\s*\(\s*([a-zA-Z0-9_]+)\s*,/g)].map(m=>m[2]);
+    const hasPinModeFor = (pin)=> new RegExp('pinMode\\s*\\(\\s*'+pin+'\\s*,','i').test(text);
+    writes.forEach(p => { if (!hasPinModeFor(p)) report.tips.push(`Pertimbangkan menambahkan pinMode(${p}, OUTPUT); di setup().`); });
+
+    let balance = 0; for (const ch of text) { if (ch==='{' ) balance++; if (ch==='}') balance--; }
+    if (balance !== 0) report.issues.push('Kemungkinan kurung kurawal { } tidak seimbang.');
+    if (/\bdelay\s*\(/.test(text)) report.tips.push('Pertimbangkan non-blocking dengan millis() agar tidak mengunci loop().');
+
+    if (hasSetup) report.explain.push('setup(): inisialisasi awal (Serial, pin, sensor).');
+    if (hasLoop)  report.explain.push('loop(): kode utama berulang (baca sensor, kirim data).');
+    if (usesSerial) report.explain.push('Serial: debug/cetak data ke Serial Monitor.');
+
+    let fixed = src;
+    if (!hasSetup || !hasLoop) {
+      fixed = `#include <Arduino.h>\n\n${hasSetup ? '' : 'void setup(){ }\n'}${hasLoop ? '' : 'void loop(){ }\n'}\n` + fixed;
+      report.fixes.push('Menambahkan kerangka dasar setup()/loop().');
+    }
+    if (usesSerial && !hasSerialBegin) {
+      fixed = fixed.replace(/void\s+setup\s*\([^)]*\)\s*\{/, m => m + "\n  Serial.begin(9600);\n");
+      report.fixes.push('Menambahkan Serial.begin(9600); di setup().');
+    }
+    if (balance !== 0) report.tips.push('Periksa penutupan kurung } yang hilang/berlebih.');
+
+    report.corrected = fixed !== src ? fixed : null;
+    return report;
+  }
+
+  // === Jawaban lokal IoT ringkas (fallback) ===
+  function isIoTTopic(text){
+    const t = text.toLowerCase();
+    return /(iot|arduino|esp32|esp8266|pico|sensor|mqtt|broker|wifi|lora|http|coap|blynk|thingspeak|node[- ]?red)/.test(t);
+  }
+  function basicIoTAnswer(q){
+    const t = q.toLowerCase();
+    const items = [
+      { re: /(apa itu|pengertian|what is)\s+(iot|internet of things)/, ans: 'IoT menghubungkan perangkat fisik ke internet untuk kirim/terima data. Contoh: sensor suhu kirim data ke server lalu tampil di dashboard.' },
+      { re: /arduino\s+uno\b/, ans: 'Arduino Uno: 8-bit 16MHz, 14 pin digital (6 PWM), 6 analog, tanpa WiFi. Untuk IoT pakai ESP8266/ESP32 atau modul WiFi.' },
+      { re: /esp32\b/, ans: 'ESP32: WiFi+BLE, dual-core, banyak ADC/PWM. Pin 34–39 input-only.' },
+      { re: /mqtt|broker/, ans: 'MQTT: publish/subscribe via broker; hemat bandwidth untuk IoT realtime.' },
+      { re: /i2c|sda|scl/, ans: 'I2C: SDA/SCL, banyak device di dua kabel, tiap device punya alamat.' },
+      { re: /millis|non.?blocking|delay\b/, ans: 'Gunakan millis() untuk tugas periodik agar loop() tidak macet.' },
+    ];
+    for (const it of items) if (it.re.test(t)) return { text: it.ans, matched: true };
+    if (isIoTTopic(t)) return { text: 'Topik IoT terdeteksi. Jelaskan sensor/board/protokol yang kamu mau atau tempel kode untuk dicek.', matched:false };
+    return { text: 'Bisa tanya konsep IoT atau tempel kode Arduino/ESP32 untuk diperiksa.', matched:false };
+  }
+
+  // === PANGGIL BACKEND PROXY (AMAN) ===
+  async function askGemini(prompt){
+    const ctl = new AbortController();
+    const t = setTimeout(()=> ctl.abort('timeout'), 25000); // 25 detik
+    try {
+      const res = await fetch('/api/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt }),
+        signal: ctl.signal
+      });
+      if (!res.ok) {
+        const txt = await res.text().catch(()=> '');
+        throw new Error('proxy_'+res.status+': '+txt.slice(0,180));
+      }
+      const data = await res.json();
+      return (data?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+    } finally { clearTimeout(t); }
+  }
+
+  // === Jawab pertanyaan ===
+  async function answer(query){
+    if (isArduinoCode(query)){
+      const r = analyzeArduino(query);
+      const lines = [];
+      if (r.explain.length) lines.push('Penjelasan: ' + r.explain.join(' '));
+      if (r.issues.length)  lines.push('Masalah: ' + r.issues.join('; '));
+      if (r.tips.length)    lines.push('Saran: ' + r.tips.join('; '));
+      if (r.fixes.length)   lines.push('Perbaikan otomatis: ' + r.fixes.join('; '));
+      const text = lines.join('\n');
+      if (text) addBubble(text, 'ai');
+      if (r.corrected) { addBubble('Contoh perbaikan (cek kembali):', 'ai'); addCodeBlock(r.corrected); }
+      return;
+    }
+
+    const qTrim = query.trim();
+    const local = basicIoTAnswer(qTrim);
+
+    if (!cloudToggle.checked) { addBubble(local.text, 'ai'); return; }
+
+    const qc = bumpAndCheck(RATE_CLOUD_KEY, MAX_CLOUD);
+    if (!qc.ok) { addBubble('Kuota cloud habis, pakai jawaban lokal.', 'sys'); addBubble(local.text, 'ai'); return; }
+
+    const systemPrompt = [
+      'Kamu asisten spesialis IoT dan Arduino IDE (C/C++).',
+      'Aturan:',
+      '1) Jika user memberi kode, perbaiki dan jelaskan singkat; jawaban kode selalu dalam blok ```cpp … ```.',
+      '2) Untuk wiring, tulis ringkas: board, sensor, pin, tegangan, risiko umum.',
+      '3) Jika info kurang, sebutkan apa yang dibutuhkan.',
+      '4) Jawab ringkas dan jelas, bahasa Indonesia.'
+    ].join('\n');
+
+    try {
+      const cleaned = await askGemini(systemPrompt + '\n\nPertanyaan: ' + qTrim);
+      addBubble(cleaned || local.text, 'ai');
+    } catch (e){
+      addBubble('Gagal memproses di server (timeout/limit). Menampilkan jawaban lokal.', 'err');
+      addBubble(local.text, 'ai');
+    } finally { updateQuotaUI(); }
+  }
+
+  function greet(){ addBubble('Halo! Saya asisten IoT. Tanyakan hal tentang Arduino, ESP32, sensor, atau paste kode untuk diperbaiki.', 'ai'); }
+
+  async function onSend(){
+    const q = (input.value || '').trim();
+    if (!q) return;
+    const r = bumpAndCheck(RATE_ALL_KEY, MAX_ALL);
+    if (!r.ok) { addBubble('Batas pertanyaan/jam tercapai. Coba lagi nanti.', 'sys'); return; }
+    addBubble(q, 'me');
+    input.value = '';
+    sendBtn.disabled = true;
+    const typing = showTyping();
+    try { await answer(q); } finally { hideTyping(typing); sendBtn.disabled = false; }
+  }
+
+  sendBtn.addEventListener('click', onSend);
+  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); }});
+
+  updateQuotaUI();
+  greet();
+  </script>
+</body>
+</html>

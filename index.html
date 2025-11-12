@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <title>MicroPlayground — Belajar IoT Tanpa Pusing</title>
+  <link rel="stylesheet" href="style.css">
+  <meta name="description" content="Belajar dan membangun IoT tanpa pusing: komponen, wiring, kode, dan proyek siap pakai.">
+</head>
+<body data-page="home">
+  <nav>
+    <div class="nav-inner">
+      <a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.png" alt=""/> <span>MicroPlayground</span></a>
+      <button id="nav-toggle" class="btn ghost hamburger" aria-label="Toggle Menu"><span class="ham" aria-hidden="true"></span></button>
+      <div id="nav-menu" class="menu icons" aria-label="Primary">
+        <!-- Components icon -->
+        <a class="navicon" href="components.html" aria-label="Components" title="Chips">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <defs>
+              <linearGradient id="navGrad1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="50%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            <rect x="5" y="5" width="14" height="14" rx="2.5" fill="none" stroke="url(#navGrad1)" stroke-width="1.6"/>
+            <rect x="8" y="8" width="8" height="8" rx="1.6" fill="#0d1436" stroke="#5f78ff" stroke-width="1"/>
+            <g fill="#5f78ff">
+              <rect x="11.5" y="3" width="1" height="3"/>
+              <rect x="11.5" y="18" width="1" height="3"/>
+              <rect x="3" y="11.5" width="3" height="1"/>
+              <rect x="18" y="11.5" width="3" height="1"/>
+            </g>
+          </svg>
+        </a>
+        <!-- Projects icon -->
+        <a class="navicon" href="projects.html" aria-label="Projects" title="Projects">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <defs>
+              <linearGradient id="navGrad2" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="50%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" fill="#0d1436" stroke="url(#navGrad2)" stroke-width="1.6"/>
+            <path d="M12 7l3.5 2-3.5 2-3.5-2z" fill="#5f78ff"/>
+          </svg>
+        </a>
+        <!-- Learn icon -->
+        <a class="navicon" href="learn.html" aria-label="Learn" title="Learn">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <defs>
+              <linearGradient id="navGrad3" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="50%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            <path d="M3 7l9-3 9 3-9 3-9-3z" fill="#0d1436" stroke="url(#navGrad3)" stroke-width="1.6"/>
+            <path d="M6 10v6c0 1.1 3 2 6 2s6-.9 6-2v-6" fill="#0d1436" stroke="#364878"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="landing-hero container">
+      <div class="hero-left"></div>
+      <div class="hero-right">
+        <div class="visual-bot" aria-hidden="true">
+          <div class="aurora"></div>
+          <!-- IoT bot inspired visual -->
+          <svg class="bot3d" viewBox="0 0 420 520" role="img" aria-label="IoT Bot">
+            <defs>
+              <linearGradient id="neon" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="50%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+              <radialGradient id="glow" cx="50%" cy="50%" r="60%">
+                <stop offset="0%" stop-color="#22d3ee" stop-opacity=".35"/>
+                <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+              </radialGradient>
+              <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity=".6"/>
+              </filter>
+            </defs>
+
+            <!-- pedestal -->
+            <ellipse cx="210" cy="495" rx="120" ry="18" fill="#0a0f25" stroke="#1d2746"/>
+
+            <!-- body -->
+            <g transform="translate(105,120)" filter="url(#shadow)">
+              <!-- head (wrapped for animation) -->
+              <g class="bot-head">
+                <rect x="25" y="0" width="180" height="160" rx="32" fill="#0f1431" stroke="url(#neon)" stroke-width="10"/>
+                <rect x="50" y="25" width="130" height="110" rx="16" fill="#0b1024" stroke="#232f59"/>
+                <circle cx="115" cy="80" r="6" fill="#fff"/>
+                <circle cx="90" cy="72" r="4" fill="#5f78ff"/>
+                <circle cx="140" cy="88" r="4" fill="#22d3ee"/>
+              </g>
+
+              <!-- torso -->
+              <rect class="torso" x="55" y="170" width="120" height="90" rx="22" fill="#101634" stroke="#2a3863"/>
+              <rect x="85" y="200" width="60" height="10" rx="5" fill="#24325f"/>
+
+              <!-- arms (wrapped for animation) -->
+              <g class="arm left">
+                <rect x="20" y="185" width="28" height="65" rx="14" fill="#101634" stroke="#2a3863"/>
+              </g>
+              <g class="arm right">
+                <rect x="172" y="185" width="28" height="65" rx="14" fill="#101634" stroke="#2a3863"/>
+              </g>
+
+              <!-- legs (wrapped for animation) -->
+              <g class="leg left">
+                <rect x="80" y="270" width="26" height="60" rx="10" fill="#101634" stroke="#2a3863"/>
+              </g>
+              <g class="leg right">
+                <rect x="128" y="270" width="26" height="60" rx="10" fill="#101634" stroke="#2a3863"/>
+              </g>
+            </g>
+
+            <!-- halo glow -->
+            <ellipse cx="210" cy="170" rx="150" ry="80" fill="url(#glow)"/>
+          </svg>
+
+          <!-- HUD wiring overlay -->
+          <svg class="hud-wires" viewBox="0 0 420 520" aria-hidden="true">
+            <defs>
+              <linearGradient id="wireGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="50%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+              <linearGradient id="wireGrad2" x1="1" y1="0" x2="0" y2="0">
+                <stop offset="0%" stop-color="#f59e0b"/>
+                <stop offset="50%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#22d3ee"/>
+              </linearGradient>
+            </defs>
+            <!-- left bracket corners -->
+            <path d="M20 120 v40" stroke="#2f3f77"/>
+            <path d="M20 200 v40" stroke="#2f3f77"/>
+            <!-- main wire to right card -->
+            <path class="wire grad" d="M260 160 H360 V230" fill="none" stroke="url(#wireGrad)" stroke-width="2.4" stroke-linecap="round"/>
+            <circle class="dot" cx="260" cy="160" r="3" fill="#22d3ee"/>
+            <!-- extra wires to right card (colored) -->
+            <path class="wire cyan slow" d="M300 120 H382 V210" fill="none"/>
+            <path class="wire purple" d="M280 260 H372 V302" fill="none"/>
+            <!-- bottom wires (right side) – raised upward -->
+            <path class="wire" d="M240 260 H345" fill="none" stroke="#2f3f77" stroke-width="2"/>
+            <path class="wire" d="M240 280 H325" fill="none" stroke="#2f3f77" stroke-width="2"/>
+
+            <!-- left wires to left floating area (keep even if card removed) -->
+            <path class="wire grad" d="M160 200 V160 H60" fill="none" stroke="url(#wireGrad2)" stroke-width="2.4" stroke-linecap="round"/>
+            <circle class="dot" cx="160" cy="200" r="3" fill="#22d3ee"/>
+            <!-- extra colored accents to the left -->
+            <path class="wire purple slow" d="M190 240 V188 H95" fill="none"/>
+            <path class="wire cyan" d="M180 240 H85" fill="none"/>
+            <!-- additional lower wire to hud-stack (left) -->
+            <path class="wire orange" d="M170 300 H80" fill="none"/>
+          </svg>
+
+          <!-- Left stacked helper panel (quote + tasks) -->
+          <div class="hud-stack" aria-label="IoT Helper Panel">
+            <svg class="stack-rail" viewBox="0 0 360 120" aria-hidden="true">
+              <defs>
+                <linearGradient id="stackGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#22d3ee"/>
+                  <stop offset="60%" stop-color="#7c3aed"/>
+                  <stop offset="100%" stop-color="#f59e0b"/>
+                </linearGradient>
+              </defs>
+              <!-- left bracket corners -->
+              <path d="M6 12 v24" stroke="#2f3f77"/>
+              <path d="M6 88 v24" stroke="#2f3f77"/>
+              <!-- top rail with notch -->
+              <path d="M64 30 h 180 l 16 0 c 12 0 18 12 18 12" fill="none" stroke="url(#stackGrad)" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div class="stack-card">
+              <div class="quote-box">“</div>
+            </div>
+            <div class="stack-item">
+              <b>Rancang & Uji Proyek IoT</b>
+              <div class="sub">Dari komponen → wiring → kode</div>
+            </div>
+            <div class="stack-item dim">
+              <b>Pelajari Alat & Protokol</b>
+              <div class="sub">I2C • SPI • UART • MQTT</div>
+            </div>
+          </div>
+
+          <!-- Right HUD panel (replacing floating card) -->
+          <div class="hud-right" aria-label="IoT Right Panel">
+            <div class="r-status">
+              <span class="r-dot" aria-hidden="true"></span>
+              <span class="r-text">BUILDING IN…</span>
+              <span class="r-face" aria-hidden="true">:</span>
+            </div>
+            <div class="r-action">
+              <span class="r-arrow">›</span>
+              <button class="r-btn">IOT COMPONENTS LAUNCHER</button>
+            </div>
+            <div class="r-list">
+              <div class="r-row"><span class="caret">‹</span> COMMUNICATION: I2C / SPI / UART</div>
+              <div class="r-row"><span class="caret">‹</span> MODULES: WIFI, BLUETOOTH, LORA</div>
+              <div class="r-row"><span class="caret">‹</span> EXAMPLE: ESP8266 + DHT11 + RELAY</div>
+            </div>
+          </div>
+
+          
+          <!-- Bottom-left tagline near the bot -->
+          <div class="tagline" aria-hidden="false">
+            <!-- Dynamic rails will be sized via JS to perfectly follow text -->
+            <svg class="tag-rails" id="tag-rails" width="10" height="64" aria-hidden="true">
+              <defs>
+                <linearGradient id="neon2" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#22d3ee"/>
+                  <stop offset="50%" stop-color="#7c3aed"/>
+                  <stop offset="100%" stop-color="#f59e0b"/>
+                </linearGradient>
+              </defs>
+              <path id="rail-top" d="M8 22 Q 8 6 22 6 H 320" stroke="url(#neon2)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <path id="rail-bot" d="M16 56 H 300 l 22 -10" stroke="url(#neon2)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            <div class="tag-text">
+              <div class="big">Unlimited Solutions</div>
+              <div class="big">for IoT Learning</div>
+              <span class="tag-notch" aria-hidden="true"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="hero-accent" aria-hidden="true"></div>
+
+    <section class="solutions container solutions-showcase">
+      <div class="sol-left">
+        <div class="sol-corner" aria-hidden="true">
+          <span class="tick"></span>
+        </div>
+        <h2 class="sol-title">MicroPlayground</h2>
+        <h3 class="sol-sub">Chips • Projects • Learn</h3>
+        <p class="sol-desc">Belajar dan membangun IoT tanpa pusing. Mulai dari memilih komponen, melihat wiring yang aman, sampai menjalankan proyek nyata.</p>
+        <div class="sol-ctas">
+          <a class="btn" href="components.html">Chips</a>
+          <a class="btn ghost" href="projects.html">Projects</a>
+          <a class="btn ghost" href="learn.html">Learn</a>
+        </div>
+      </div>
+      <div class="sol-right">
+        <div class="sol-lines">
+          <div class="line"><span class="caret">›</span> EXPLORER KOMPONEN CEPAT</div>
+          <div class="line"><span class="caret">›</span> TEMPLATE PROYEK 3 LEVEL</div>
+          <div class="line"><span class="caret">›</span> BELAJAR TERARAH & PRAKTIS</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.png" alt=""/> <span>MicroPlayground</span></a>
+      <div class="foot-links">
+        <a href="components.html">Chips</a>
+        <a href="projects.html">Projects</a>
+        <a href="learn.html">Learn</a>
+      </div>
+      <div class="foot-copy">© 2025 MicroPlayground</div>
+    </div>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="patch.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+

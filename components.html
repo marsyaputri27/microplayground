@@ -1,0 +1,165 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <title>Components — MicroPlayground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="components">
+  <nav>
+    <div class="nav-inner">
+      <a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.png" alt=""/> <span>MicroPlayground</span></a>
+      <button id="nav-toggle" class="btn ghost hamburger" aria-label="Toggle Menu"><span class="ham" aria-hidden="true"></span></button>
+      <div id="nav-menu" class="menu icons" aria-label="Primary">
+        <a class="navicon" href="components.html" aria-label="Components" title="Components">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <defs>
+              <linearGradient id="navGrad1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="50%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            <rect x="5" y="5" width="14" height="14" rx="2.5" fill="none" stroke="url(#navGrad1)" stroke-width="1.6"/>
+            <rect x="8" y="8" width="8" height="8" rx="1.6" fill="#0d1436" stroke="#5f78ff" stroke-width="1"/>
+            <g fill="#5f78ff">
+              <rect x="11.5" y="3" width="1" height="3"/>
+              <rect x="11.5" y="18" width="1" height="3"/>
+              <rect x="3" y="11.5" width="3" height="1"/>
+              <rect x="18" y="11.5" width="3" height="1"/>
+            </g>
+          </svg>
+        </a>
+        <a class="navicon" href="projects.html" aria-label="Projects" title="Projects">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <defs>
+              <linearGradient id="navGrad2" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="50%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" fill="#0d1436" stroke="url(#navGrad2)" stroke-width="1.6"/>
+            <path d="M12 7l3.5 2-3.5 2-3.5-2z" fill="#5f78ff"/>
+          </svg>
+        </a>
+        <a class="navicon" href="learn.html" aria-label="Learn" title="Learn">
+          <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+            <defs>
+              <linearGradient id="navGrad3" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#22d3ee"/>
+                <stop offset="50%" stop-color="#7c3aed"/>
+                <stop offset="100%" stop-color="#f59e0b"/>
+              </linearGradient>
+            </defs>
+            <path d="M3 7l9-3 9 3-9 3-9-3z" fill="#0d1436" stroke="url(#navGrad3)" stroke-width="1.6"/>
+            <path d="M6 10v6c0 1.1 3 2 6 2s6-.9 6-2v-6" fill="#0d1436" stroke="#364878"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="page-title">
+       <svg class="page-rails" viewBox="0 0 320 64" height="64" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <defs>
+          <linearGradient id="pgNeon1" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#22d3ee"/>
+            <stop offset="50%" stop-color="#7c3aed"/>
+            <stop offset="100%" stop-color="#f59e0b"/>
+          </linearGradient>
+        </defs>
+        <path class="rail-top" d="M8 22 Q 8 6 22 6 H 320" stroke="url(#pgNeon1)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path class="rail-bot" d="M16 56 H 300 l 22 -10" stroke="url(#pgNeon1)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div class="title-text"><h1 class="title-chip">Chips</h1></div>
+    </div>
+    <p class="muted">Filter berdasarkan tipe, interface, atau tegangan. Klik “Detail” untuk modal lengkap.</p>
+
+    <div class="filters">
+      <span class="select-wrap">
+        <select id="fType">
+          <option value="">Semua tipe</option>
+          <option value="board">Board</option>
+          <option value="sensor">Sensor</option>
+          <option value="actuator">Actuator</option>
+          <option value="module">Module</option>
+        </select>
+        <span class="caret" aria-hidden="true">▾</span>
+      </span>
+      <span class="select-wrap">
+        <select id="fIface">
+          <option value="">Interface</option>
+          <option>Digital</option>
+          <option>Analog</option>
+          <option>I2C</option>
+          <option>SPI</option>
+          <option>UART</option>
+          <option>PWM</option>
+        </select>
+        <span class="caret" aria-hidden="true">▾</span>
+      </span>
+      <span class="select-wrap">
+        <select id="fVolt">
+          <option value="">Tegangan</option>
+          <option value="5V">5V</option>
+          <option value="3.3V">3.3V</option>
+        </select>
+        <span class="caret" aria-hidden="true">▾</span>
+      </span>
+    </div>
+
+    <div id="comp-grid" class="cards"></div>
+  </main>
+
+  <a class="chat-fab" href="ai-reviewer.html" aria-label="Tanya AI (IoT)" title="Tanya AI (IoT)">
+    <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
+      <defs>
+        <linearGradient id="chatGradComp" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#22d3ee"/>
+          <stop offset="50%" stop-color="#7c3aed"/>
+          <stop offset="100%" stop-color="#f59e0b"/>
+        </linearGradient>
+      </defs>
+      <path d="M3 5h18v10H8l-5 4V5z" fill="#0d1436" stroke="url(#chatGradComp)" stroke-width="1.6"/>
+      <circle cx="9" cy="10" r="1.2" fill="#5f78ff"/>
+      <circle cx="12" cy="10" r="1.2" fill="#5f78ff"/>
+      <circle cx="15" cy="10" r="1.2" fill="#5f78ff"/>
+    </svg>
+  </a>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.png" alt=""/> <span>MicroPlayground</span></a>
+      <div class="foot-links">
+        <a href="components.html">Chips</a>
+        <a href="projects.html">Projects</a>
+        <a href="learn.html">Learn</a>
+      </div>
+      <div class="foot-copy">© 2025 MicroPlayground</div>
+    </div>
+  </footer>
+
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="panel">
+      <div class="head">
+        <b>Detail Komponen</b>
+        <span id="modal-close" class="close">✕</span>
+      </div>
+      <div id="tabs" class="tabs"></div>
+      <div id="tab-body" class="tabbody"></div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="patch.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
+
+
+
