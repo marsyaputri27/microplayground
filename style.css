@@ -1047,10 +1047,10 @@ h1, h2, .brand {
 /* Tagline bottom-left of bot */
 .visual-bot .tagline {
   position: absolute;
-  left: -10%;
+  left: -70%;
   bottom: 5%;
   top: auto;
-  width: clamp(320px, 40vw, 540px);
+  width: clamp(320px, 42vw, 560px);
   max-width: 92%;
   z-index: 3;
 }
