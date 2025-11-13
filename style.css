@@ -1088,8 +1088,17 @@ h1, h2, .brand {
 
 @media (max-width: 900px){
   .solutions-showcase { grid-template-columns: 1fr; }
-  /* Tampilkan sol-right di bawah sol-left pada layout 1 kolom */
-  .sol-right { order: 1; max-width: min(560px, 96vw); margin: 0 auto; left: 8%; }
+  /* Susun ulang agar daftar berada di bawah dan rata kiri */
+  .sol-left { order: 1; }
+  .sol-right {
+    order: 2;
+    max-width: min(560px, 96vw);
+    margin-left: var(--sol-left-ml, 0);
+    margin-right: var(--sol-left-mr, auto);
+    margin-top: 6px;
+    right: auto;
+    left: 0;
+  }
   /* Kontrol penempatan sol-left pada mobile */
   .sol-left {
     /* Batas lebar dan margin default center */
@@ -1105,7 +1114,15 @@ h1, h2, .brand {
   .sol-left.left { margin-left: -10px; margin-right: 50px; }
   .sol-left.center { margin-left: auto; margin-right: auto; }
   .sol-left.right { margin-left: auto; margin-right: 0; }
-  .sol-lines { position: static; width: 100%; margin-top: 8px; }
+  .sol-right .sol-lines {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .sol-right .sol-lines .line {
+    justify-content: flex-start;
+    text-align: left;
+  }
   /* .sol-badges removed in mobile as well */
 }
 
@@ -1270,7 +1287,7 @@ padding-bottom:5px;
 /* Final mobile tuning for home hero spacing */
 @media (max-width: 760px) {
   /* Ensure colorful line is visible and spacing is compact */
-  .hero-accent { display: block; margin-top: 12px; margin-bottom: 12px; }
+  .hero-accent { display: block; margin-top: 55px; margin-bottom: 12px; }
   /* Reduce top padding of the next section so heading is closer */
   body[data-page="home"] .solutions.container { padding-top: 8px; }
   /* Tighten gap above Solutions section */
