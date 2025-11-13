@@ -36,8 +36,16 @@ body {
   background:
     radial-gradient(900px 500px at 10% -10%, #1a2147 0, var(--bg) 40%),
     linear-gradient(180deg, var(--bg), var(--bg2));
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+/* Keep footer at the bottom without fixing it */
+main {
+  flex: 1 0 auto;
+  width: 100%;
 }
 
 /* Hide scrollbars (while keeping scroll) */
@@ -646,7 +654,7 @@ body[data-page="learn"]      main.container::before { content: none; }
 .cta-band p { margin: 0 0 10px; }
 .cta-band .actions { justify-content: center; }
 
-.site-footer { margin-top: 12px; border-top: 1px solid #1d2746; background: rgba(13,18,40,.45); }
+.site-footer { margin-top: 12px; border-top: 1px solid #1d2746; background: rgba(13,18,40,.45); flex-shrink: 0; }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; flex-wrap: wrap; }
 .foot-links a { color: #a3b0d8; text-decoration: none; margin-right: 12px; }
 .foot-links a:hover { color: #e8ecff; }
