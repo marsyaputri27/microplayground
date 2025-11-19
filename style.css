@@ -48,6 +48,10 @@ main {
   width: 100%;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 /* Hide scrollbars (while keeping scroll) */
 html { scrollbar-width: none; }
 html::-webkit-scrollbar { width: 0; height: 0; }
@@ -431,6 +435,20 @@ h1 {
 .btn:hover { border-color: #3a4a7a; transform: translateY(-1px); }
 .btn.ghost { background: transparent; }
 .btn.active { border-color: #6aa4ff; }
+.btn.primary {
+  border-color: #5f78ff;
+  background: linear-gradient(135deg, #5f78ff, #7c3aed);
+  color: #fff;
+  box-shadow: 0 15px 40px rgba(95, 120, 255, 0.35);
+}
+.btn:disabled {
+  opacity: .5;
+  pointer-events: none;
+  transform: none;
+}
+.btn.primary:disabled {
+  box-shadow: none;
+}
 
 /* Cards */
 .cards {
@@ -467,6 +485,193 @@ body[data-page="learn"] .cards {
 /* Components: remove old border-image hover (replaced by pseudo-ring) */
 body[data-page="components"] .cards .card.hover:hover {
   border-image: none;
+}
+
+/* Quiz section */
+.quiz-section {
+  margin-top: 48px;
+  padding: 28px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(15, 21, 46, 0.95), rgba(8, 11, 25, 0.92));
+  box-shadow: 0 30px 70px rgba(3, 5, 15, 0.65);
+}
+.quiz-header {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.quiz-header h2 {
+  margin: 0;
+}
+.quiz-note {
+  margin: 14px 0 24px;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+.quiz-area,
+.quiz-summary {
+  margin-top: 18px;
+}
+.quiz-card {
+  border: 1px solid rgba(95, 120, 255, 0.35);
+  border-radius: 18px;
+  padding: 22px;
+  background: rgba(11, 16, 34, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+.quiz-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.quiz-tag {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #a5b4fc;
+  border: 1px solid rgba(95, 120, 255, 0.5);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(95, 120, 255, 0.18);
+}
+.quiz-step {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.quiz-q {
+  margin: 0 0 18px;
+  font-size: 1.08rem;
+  font-weight: 600;
+}
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.quiz-option {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(180deg, #121736, #0b1024);
+  color: var(--text);
+  font-size: 1rem;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: border-color .2s ease, transform .2s ease;
+}
+.quiz-option .quiz-key {
+  font-weight: 800;
+  color: #7dd3fc;
+  min-width: 32px;
+}
+.quiz-option:hover {
+  border-color: #4b5da0;
+  transform: translateY(-1px);
+}
+.quiz-option.correct {
+  border-color: #34d399;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.32);
+}
+.quiz-option.correct .quiz-key {
+  color: #34d399;
+}
+.quiz-option.wrong {
+  border-color: #fb7185;
+  background: rgba(127, 29, 29, 0.28);
+}
+.quiz-option:disabled {
+  cursor: default;
+  opacity: 0.9;
+  transform: none;
+}
+.quiz-feedback {
+  margin-top: 18px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px dashed transparent;
+  display: none;
+  gap: 12px;
+  align-items: center;
+  font-weight: 600;
+}
+.quiz-feedback.show {
+  display: flex;
+}
+.quiz-feedback.success {
+  border-color: rgba(16, 185, 129, 0.6);
+  background: rgba(5, 150, 105, 0.2);
+  color: #6ee7b7;
+}
+.quiz-feedback.error {
+  border-color: rgba(248, 113, 113, 0.7);
+  background: rgba(239, 68, 68, 0.18);
+  color: #fecaca;
+}
+.quiz-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+.quiz-icon.success {
+  background: rgba(16, 185, 129, 0.3);
+  color: #22d3ee;
+}
+.quiz-icon.error {
+  background: rgba(248, 113, 113, 0.3);
+  color: #ff9aae;
+}
+.quiz-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+.quiz-summary .quiz-card {
+  text-align: center;
+}
+.quiz-score {
+  font-size: 3rem;
+  font-weight: 800;
+  margin: 14px 0 8px;
+  color: #f9fafb;
+}
+.quiz-summary small {
+  color: var(--muted);
+}
+.quiz-summary p {
+  margin-bottom: 16px;
+}
+
+@media (min-width: 720px) {
+  .quiz-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 640px) {
+  .quiz-section {
+    padding: 22px 18px;
+  }
+  .quiz-card {
+    padding: 18px;
+  }
+  .quiz-footer {
+    justify-content: stretch;
+  }
+  .quiz-footer .btn {
+    width: 100%;
+  }
 }
 
 /* Components: gradient border by default, stronger on hover */
@@ -546,6 +751,49 @@ body[data-page="projects"] .cards .card.hover:hover::before {
   opacity: 1; padding: 4px; filter: drop-shadow(0 0 12px rgba(124,58,237,.45));
   animation: shiftGradient 2.2s linear infinite;
 }
+body[data-page="projects"] .cards .actions {
+  margin-top: 12px;
+}
+body[data-page="projects"] .cards .actions .detail-btn.active {
+  border-color: #7c3aed;
+  color: #fff;
+  background: rgba(124,58,237,.22);
+}
+
+.project-panel { width: min(840px, 94vw); }
+.proj-modal-body { padding: 10px 6px 16px; }
+.proj-modal-content .proj-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.proj-modal-content .proj-head h2 { margin:0 0 4px; }
+.proj-modal-content .proj-head .tag { margin-top:4px; }
+.proj-modal-content .proj-actions { display:flex; gap:10px; }
+.proj-modal-content .proj-meta {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:18px;
+  margin-top:14px;
+}
+.detail-tools {
+  list-style:disc;
+  margin:6px 0 0 18px;
+  padding:0;
+  color:#e2e8ff;
+}
+.detail-code {
+  background:#050a1c;
+  border:1px solid #1f2b4f;
+  border-radius:10px;
+  padding:12px;
+  font-size:13px;
+  overflow:auto;
+  margin:8px 0;
+}
+.proj-modal-content .detail-copy { width:100%; }
 
 /* Learn: match Components/Projects hover ring + glow */
 body[data-page="learn"] .cards .card.hover:hover { border-image: none; }
