@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="id">
 <head>
   <meta charset="utf-8">
@@ -90,8 +90,17 @@
     </div>
 
     <div id="proj-list" class="cards"></div>
-    <div id="proj-detail" style="margin-top:16px;"></div>
   </main>
+
+  <div id="proj-modal" class="modal" aria-hidden="true">
+    <div class="panel project-panel">
+      <div class="head">
+        <b>Detail Proyek</b>
+        <span id="proj-modal-close" class="close" role="button" tabindex="0">&times;</span>
+      </div>
+      <div id="proj-modal-body" class="proj-modal-body"></div>
+    </div>
+  </div>
 
   <a class="chat-fab" href="ai-reviewer.html" aria-label="Tanya AI (IoT)" title="Tanya AI (IoT)">
     <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true">
