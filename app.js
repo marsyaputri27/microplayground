@@ -1,4 +1,4 @@
-﻿// app.js
+// app.js
 // Data is provided globally by data.js loaded before this script.
 
 // ===== NAVBAR & ACTIVE STATE =====
@@ -106,7 +106,11 @@ function setActive() {
 
 // ===== UTIL =====
 const esc = s => String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
-const copy = async txt => { try { await navigator.clipboard.writeText(txt); alert('Kode disalin. Jangan dihapus imanmu.'); } catch(e){ alert('Clipboard ngambek. Copy manual.'); } };
+const copy = async txt => {
+  try {
+    await navigator.clipboard.writeText(txt);
+  } catch(_){}
+};
 const saveLS = (k,v) => localStorage.setItem(k, JSON.stringify(v));
 const getLS = (k,def=[]) => { try{ return JSON.parse(localStorage.getItem(k)) ?? def }catch{ return def } };
 
@@ -516,10 +520,15 @@ if (false && document.body.dataset.page === 'projects') {
   renderDetail();
 }
 
-// ===== PROJECTS PAGE (simplified) =====
+// ===== PROJECTS PAGE (modal detail) =====
 if (document.body.dataset.page === 'projects') {
   const wrap = document.querySelector('#proj-list');
   const fLevel = document.querySelector('#fLevel');
+  const modal = document.querySelector('#proj-modal');
+  const modalBody = document.querySelector('#proj-modal-body');
+  const modalClose = document.querySelector('#proj-modal-close');
+  const projectMap = new Map((PROJECTS || []).map(p => [p.id, p]));
+  let currentDetail = '';
 
   const ytIdFromUrl = (raw='') => {
     const str = String(raw).trim();
@@ -542,54 +551,136 @@ if (document.body.dataset.page === 'projects') {
     return '';
   };
 
-  // Parse playlist ID from URL or raw ID
-  const ytListFromUrl = (raw='') => {
-    const str = String(raw).trim();
-    if (!str) return '';
-    try {
-      const url = new URL(str);
-      const list = url.searchParams.get('list');
-      if (list) return list;
-    } catch(_) {
-      if (/^(PL|UU|OL)[A-Za-z0-9_-]{10,}$/.test(str)) return str;
-    }
-    return '';
+  const escapeHtml = (str='') => String(str).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+
+  const closeModal = () => {
+    if (!modal) return;
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden','true');
+    currentDetail = '';
+    if (wrap) wrap.querySelectorAll('[data-detail]').forEach(btn => btn.classList.remove('active'));
+  };
+
+  const openModal = (project) => {
+    if (!modal || !modalBody) return;
+    const level = project.level ? `<span class="tag chip">${escapeHtml(project.level)}</span>` : '';
+    const desc = project.desc ? `<p>${escapeHtml(project.desc)}</p>` : `<p class="muted">Deskripsi proyek belum ditambahkan.</p>`;
+    const tools = (Array.isArray(project.tools) && project.tools.length)
+      ? `<ul class="detail-tools">${project.tools.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`
+      : `<p class="muted">Daftar alat belum tersedia.</p>`;
+    const codeBlock = project.code
+      ? `<pre class="detail-code"><code>${escapeHtml(project.code)}</code></pre><button class="btn ghost detail-copy" type="button">Copy Code</button>`
+      : `<p class="muted">Kode belum diisi.</p>`;
+    const id = project.youtube ? ytIdFromUrl(project.youtube) : '';
+    const videoBtn = project.youtube
+      ? `<a class="btn" target="_blank" rel="noopener" href="${project.youtube}">${id ? 'Tonton Video' : 'Lihat Detail'}</a>`
+      : '';
+    modalBody.innerHTML = `
+      <div class="proj-modal-content">
+        <div class="proj-head">
+          <div>
+            <h2>${escapeHtml(project.title)}</h2>
+            ${level}
+          </div>
+          <div class="proj-actions">
+            ${videoBtn}
+          </div>
+        </div>
+        ${desc}
+        <div class="proj-meta">
+          <div>
+            <h4>Alat yang digunakan</h4>
+            ${tools}
+          </div>
+          <div>
+            <h4>Code</h4>
+            ${codeBlock}
+          </div>
+        </div>
+      </div>
+    `;
+    const copyBtn = modalBody.querySelector('.detail-copy');
+    if (copyBtn && project.code) copyBtn.onclick = () => copy(project.code);
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden','false');
+  };
+
+  if (modalClose) {
+    modalClose.onclick = closeModal;
+    modalClose.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); closeModal(); }
+    });
+  }
+  if (modal) {
+    modal.addEventListener('click', e => {
+      if (e.target === modal) closeModal();
+    });
+  }
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && modal?.classList.contains('show')) closeModal();
+  });
+
+  const normLevel = (s='')=>{
+    const t = String(s).trim().toLowerCase();
+    if (!t) return '';
+    if (['beginner','pemula'].includes(t)) return 'beginner';
+    if (['intermediate','menengah'].includes(t)) return 'intermediate';
+    if (['advanced','lanjut','lanjutan'].includes(t)) return 'advanced';
+    return t;
   };
 
   function renderList(){
+    if (!wrap) return;
     const lv = fLevel ? fLevel.value : '';
-    const normLevel = (s='')=>{
-      const t = String(s).trim().toLowerCase();
-      if (!t) return '';
-      if (['beginner','pemula'].includes(t)) return 'beginner';
-      if (['intermediate','menengah'].includes(t)) return 'intermediate';
-      if (['advanced','lanjut','lanjutan'].includes(t)) return 'advanced';
-      return t;
-    };
     const want = normLevel(lv);
-    wrap.innerHTML = PROJECTS.filter(p=>!want || normLevel(p.level)===want).map(p=>{
+    const html = PROJECTS.filter(p=>!want || normLevel(p.level)===want).map(p=>{
       const id = p.youtube ? ytIdFromUrl(p.youtube) : '';
-      const list = p.youtube ? (typeof ytListFromUrl === 'function' ? ytListFromUrl(p.youtube) : '') : '';
-      const href = id ? `https://www.youtube.com/watch?v=${id}` : (list ? `https://www.youtube.com/playlist?list=${list}` : '');
+      const href = id ? `https://www.youtube.com/watch?v=${id}` : (p.youtube || '');
       const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : '';
-      const media = href
-        ? (id
-            ? `<a class=\"yt-wrap yt-open\" href=\"${href}\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"background-image:url('${thumb}'); background-size:cover; background-position:center;\">\n                 <span class=\"yt-play\" aria-hidden=\"true\"></span>\n                 <span class=\"sr-only\">Buka video di YouTube</span>\n               </a>`
-            : `<a class=\"yt-wrap yt-open\" href=\"${href}\" target=\"_blank\" rel=\"noopener noreferrer\">\n                 <span class=\"yt-play\" aria-hidden=\"true\"></span>\n                 <span class=\"sr-only\">Buka playlist di YouTube</span>\n               </a>`)
+      const media = href && id
+        ? `<a class="yt-wrap yt-open" href="${href}" target="_blank" rel="noopener noreferrer" style="background-image:url('${thumb}'); background-size:cover; background-position:center;">
+            <span class="yt-play" aria-hidden="true"></span>
+            <span class="sr-only">Buka video di YouTube</span>
+          </a>`
         : '';
       return `
-      <div class=\"card hover\">\n        ${media}\n        <h3>${p.title}</h3>\n        ${p.level ? `<p class=\"muted\">Level: ${p.level}</p>` : ''}\n      </div>`;
+      <div class="card hover">
+        ${media}
+        <h3>${p.title}</h3>
+        ${p.level ? `<p class="muted">Level: ${p.level}</p>` : ''}
+        <div class="actions">
+          <button type="button" class="btn ghost detail-btn" data-detail="${p.id}">Detail</button>
+        </div>
+      </div>`;
     }).join('');
+    wrap.innerHTML = html || '<p class="muted">Proyek tidak ditemukan.</p>';
+    wrap.querySelectorAll('[data-detail]').forEach(btn => {
+      btn.onclick = () => {
+        const proj = projectMap.get(btn.dataset.detail);
+        wrap.querySelectorAll('[data-detail]').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (proj) {
+          currentDetail = proj.id;
+          openModal(proj);
+        }
+      };
+    });
   }
 
-  if (fLevel) fLevel.onchange = renderList;
+  if (fLevel) fLevel.onchange = () => {
+    closeModal();
+    renderList();
+  };
   renderList();
 }
-
 // ===== LEARN PAGE =====
 if (document.body.dataset.page === 'learn') {
   const vids = document.querySelector('#yt-list');
   const faq = document.querySelector('#faq');
+  const quizBtn = document.querySelector('#quiz-start');
+  const quizArea = document.querySelector('#quiz-area');
+  const quizSummary = document.querySelector('#quiz-summary');
+  const quizSection = document.querySelector('#quiz');
 
   const toPlaylistId = (raw='')=>{
     const s = String(raw||'').trim();
@@ -671,6 +762,253 @@ if (document.body.dataset.page === 'learn') {
         <p>${t.a}</p>
       </details>
     `).join('');
+  }
+
+  if (quizBtn && quizArea && quizSummary) {
+    const QUIZ_ITEMS = [
+      {
+        id: 1,
+        tag: '🧩 Soal Dasar',
+        question: 'Komponen mana di MicroPlayground yang dideskripsikan sebagai "Board klasik untuk pemula, stabil, dukungan library melimpah"?',
+        answer: 'B',
+        explain: 'Arduino Uno R3 disebut secara eksplisit sebagai board klasik untuk pemula dengan dukungan library yang luas.',
+        options: [
+          { key: 'A', label: 'ESP32 Devkit' },
+          { key: 'B', label: 'Arduino Uno R3' },
+          { key: 'C', label: 'Arduino Nano V3' },
+          { key: 'D', label: 'STM32 Blue Pill' }
+        ]
+      },
+      {
+        id: 2,
+        tag: '🧩 Soal Dasar',
+        question: 'Sensor mana di daftar COMPONENTS yang memiliki deskripsi "Sensor suhu & kelembapan murah, cukup untuk demo dasar"?',
+        answer: 'C',
+        explain: 'DHT11 digambarkan sebagai sensor suhu dan kelembapan murah yang cocok untuk demo dasar.',
+        options: [
+          { key: 'A', label: 'BME280' },
+          { key: 'B', label: 'DS18B20 Temperature Sensor' },
+          { key: 'C', label: 'DHT11 (Temp/Humidity)' },
+          { key: 'D', label: 'Soil Moisture Sensor' }
+        ]
+      },
+      {
+        id: 3,
+        tag: '🧩 Soal Dasar',
+        question: 'Playlist mana di bagian LEARN yang paling cocok untuk pengguna yang baru pertama kali belajar board Arduino?',
+        answer: 'B',
+        explain: 'Playlist "Arduino Beginners" memang disusun khusus untuk pemula yang baru memegang board Arduino.',
+        options: [
+          { key: 'A', label: 'IoT For Beginners (Playlist)' },
+          { key: 'B', label: 'Arduino Beginners (Playlist)' },
+          { key: 'C', label: 'ESP32 Introduction (Playlist)' },
+          { key: 'D', label: 'Solder & Breadbrond (Playlist)' }
+        ]
+      },
+      {
+        id: 4,
+        tag: '🧩 Soal Medium',
+        question: 'Berdasarkan data PROJECTS, project "Thermo Watch" menggunakan kombinasi apa?',
+        answer: 'B',
+        explain: 'Project thermo_oled menyebut NodeMCU ESP8266, OLED 0.96" dan sensor DHT11 dalam daftar tools.',
+        options: [
+          { key: 'A', label: 'Arduino Uno + LCD 16x2 + DS18B20' },
+          { key: 'B', label: 'NodeMCU ESP8266 + OLED 0.96" + DHT11' },
+          { key: 'C', label: 'ESP32 Devkit + OLED 0.96" + BME280' },
+          { key: 'D', label: 'Raspberry Pi 4 + HDMI monitor + DHT11' }
+        ]
+      },
+      {
+        id: 5,
+        tag: '🧩 Soal Medium',
+        question: 'Dalam project "Automatic Light Control", sensor apa yang dipakai untuk mendeteksi kondisi terang/gelap?',
+        answer: 'C',
+        explain: 'Project Automatic Light Control memakai sensor LDR untuk membaca tingkat cahaya.',
+        options: [
+          { key: 'A', label: 'PIR Motion Sensor' },
+          { key: 'B', label: 'Rain Detection Sensor' },
+          { key: 'C', label: 'LDR (Light Dependent Resistor)' },
+          { key: 'D', label: 'IR Infrared Obstacle Sensor' }
+        ]
+      },
+      {
+        id: 6,
+        tag: '🧩 Soal Medium',
+        question: 'Kamu ingin menyimpan data pembacaan sensor ke kartu eksternal untuk log. Module mana yang paling tepat digunakan?',
+        answer: 'A',
+        explain: 'Micro SD Card Module memang didesain sebagai modul penyimpanan dengan antarmuka SPI untuk logging.',
+        options: [
+          { key: 'A', label: 'Micro SD Card Module' },
+          { key: 'B', label: 'RTC DS1307 / DS3231' },
+          { key: 'C', label: 'DFPlayer Mini MP3 Module' },
+          { key: 'D', label: 'Bluetooth HC-05 / HC-06' }
+        ]
+      },
+      {
+        id: 7,
+        tag: '🧩 Soal HOTS',
+        question: 'Untuk sistem penyiraman otomatis yang aktif saat tanah kering, kombinasi sensor + referensi project mana yang paling sesuai?',
+        answer: 'B',
+        explain: 'Soil Moisture Sensor bersama project "Smart Irrigation" memantau kelembapan tanah lalu menghidupkan pompa secara otomatis.',
+        options: [
+          { key: 'A', label: 'Rain Detection Sensor + Rain Alert' },
+          { key: 'B', label: 'Soil Moisture Sensor + Smart Irrigation' },
+          { key: 'C', label: 'PIR Motion Sensor + Motion Detection' },
+          { key: 'D', label: 'IR Obstacle Sensor + Automatic Trash Can' }
+        ]
+      },
+      {
+        id: 8,
+        tag: '🧩 Soal HOTS',
+        question: 'Kamu ingin membuat jam digital yang menampilkan jam, tanggal, tetap akurat saat listrik mati, dan menampilkan suhu juga. Kombinasi mana yang memenuhi semuanya?',
+        answer: 'A',
+        explain: 'Project "Digital Clock" memakai modul DS3231 (ada backup baterai + sensor suhu) dan LCD I2C untuk menampilkan jam dan tanggal.',
+        options: [
+          { key: 'A', label: 'Project "Digital Clock" dengan DS3231 RTC + LCD I2C' },
+          { key: 'B', label: 'Project "Traffic Lights" dengan Arduino Uno' },
+          { key: 'C', label: 'Project "Clock Digital" dengan efek LED acak' },
+          { key: 'D', label: 'Project "Thermo Watch" dengan DHT11 + OLED tanpa RTC' }
+        ]
+      },
+      {
+        id: 9,
+        tag: '🧩 Soal HOTS',
+        question: 'Kamu diminta membuat sistem alarm kebocoran gas di dapur yang membunyikan alarm bila terdeteksi asap/gas. Pasangan komponen + project mana yang paling relevan?',
+        answer: 'B',
+        explain: 'MQ-2 Gas Sensor dipasangkan dengan referensi project "Smoke Alert" yang memang menghidupkan buzzer saat asap terdeteksi.',
+        options: [
+          { key: 'A', label: 'BME280 + Thermo Watch' },
+          { key: 'B', label: 'MQ-2 Gas Sensor + Smoke Alert' },
+          { key: 'C', label: 'Rain Detection Sensor + Rain Alert' },
+          { key: 'D', label: 'PIR Motion Sensor + Automatic Fan' }
+        ]
+      },
+      {
+        id: 10,
+        tag: '🧩 Soal HOTS',
+        question: 'Untuk sistem pelacakan posisi jarak jauh ala project "GPS Tracking With Google Maps", modul mana yang menggambarkan arsitekturnya?',
+        answer: 'B',
+        explain: 'Project GPS tersebut memakai kombinasi GPS Module NEO-6M dan LoRa SX1278 untuk mengirim koordinat ke penerima.',
+        options: [
+          { key: 'A', label: 'Bluetooth HC-05 + RFID RC522' },
+          { key: 'B', label: 'GPS Module NEO-6M + LoRa SX1278 433MHz Module' },
+          { key: 'C', label: 'WiFi ESP-01 + SD Card Module' },
+          { key: 'D', label: 'SIM800L GSM Module + OLED 0.96"' }
+        ]
+      }
+    ];
+
+    let quizIndex = 0;
+    let quizScore = 0;
+
+    const scrollToQuiz = ()=>{
+      if (!quizSection) return;
+      try {
+        quizSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (_) {
+        // ignore
+      }
+    };
+
+    const renderQuestion = ()=>{
+      const q = QUIZ_ITEMS[quizIndex];
+      if (!q) return;
+      const options = q.options.map(opt=>`
+        <button type="button" class="quiz-option" data-key="${opt.key}">
+          <span class="quiz-key">${opt.key}.</span>
+          <span>${opt.label}</span>
+        </button>
+      `).join('');
+      const nextLabel = quizIndex === QUIZ_ITEMS.length - 1 ? 'Lihat Hasil' : 'Soal Berikutnya';
+      quizArea.innerHTML = `
+        <div class="quiz-card">
+          <div class="quiz-head">
+            <span class="quiz-tag">${q.tag}</span>
+            <span class="quiz-step">Soal ${quizIndex + 1} / ${QUIZ_ITEMS.length}</span>
+          </div>
+          <p class="quiz-q">${q.question}</p>
+          <div class="quiz-options">${options}</div>
+          <div class="quiz-feedback" role="status" aria-live="polite"></div>
+          <div class="quiz-footer">
+            <button type="button" class="btn primary quiz-next" disabled>${nextLabel}</button>
+          </div>
+        </div>`;
+
+      const optionButtons = quizArea.querySelectorAll('.quiz-option');
+      const feedback = quizArea.querySelector('.quiz-feedback');
+      const nextBtn = quizArea.querySelector('.quiz-next');
+      let answered = false;
+
+      optionButtons.forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          if (answered) return;
+          answered = true;
+          const choice = btn.dataset.key;
+          const correct = choice === q.answer;
+          if (correct) {
+            quizScore += 1;
+            btn.classList.add('correct');
+            feedback.classList.remove('error');
+            feedback.classList.add('success');
+            feedback.innerHTML = `<span class="quiz-icon success" aria-hidden="true">✓</span><div><strong>Benar!</strong><br>${q.explain}</div>`;
+          } else {
+            btn.classList.add('wrong');
+            const correctBtn = quizArea.querySelector(`.quiz-option[data-key="${q.answer}"]`);
+            if (correctBtn) correctBtn.classList.add('correct');
+            feedback.classList.remove('success');
+            feedback.classList.add('error');
+            feedback.innerHTML = `<span class="quiz-icon error" aria-hidden="true">✗</span><div><strong>Tetot! Jawaban belum tepat.</strong><br>${q.explain}</div>`;
+          }
+          feedback.classList.add('show');
+          optionButtons.forEach(o=>o.disabled = true);
+          nextBtn.disabled = false;
+        });
+      });
+
+      nextBtn.addEventListener('click', ()=>{
+        quizIndex += 1;
+        if (quizIndex >= QUIZ_ITEMS.length) {
+          finishQuiz();
+        } else {
+          renderQuestion();
+        }
+      });
+    };
+
+    const finishQuiz = ()=>{
+      quizArea.hidden = true;
+      quizArea.innerHTML = '';
+      quizSummary.hidden = false;
+      quizBtn.hidden = false;
+      quizBtn.textContent = 'Mulai Lagi';
+      const percent = Math.round((quizScore / QUIZ_ITEMS.length) * 100);
+      let message = 'Keren! Kamu siap mengeksplor proyek yang lebih rumit.';
+      if (percent < 80 && percent >= 50) message = 'Lumayan! Coba ulangi lagi supaya makin hafal detailnya.';
+      if (percent < 50) message = 'Belum pas, tapi tenang, ulangi kuis untuk menguatkan ingatanmu.';
+      quizSummary.innerHTML = `
+        <div class="quiz-card quiz-result">
+          <p class="muted">Hasil akhir</p>
+          <div class="quiz-score">${quizScore}</div>
+          <p><small>dari ${QUIZ_ITEMS.length} soal (${percent}%).</small></p>
+          <p>${message}</p>
+          <button type="button" class="btn primary" data-restart="1">Coba Lagi</button>
+        </div>`;
+      const retry = quizSummary.querySelector('[data-restart]');
+      if (retry) retry.addEventListener('click', ()=> startQuiz());
+      scrollToQuiz();
+    };
+
+    const startQuiz = ()=>{
+      quizIndex = 0;
+      quizScore = 0;
+      quizArea.hidden = false;
+      quizSummary.hidden = true;
+      quizBtn.hidden = true;
+      renderQuestion();
+      scrollToQuiz();
+    };
+
+    quizBtn.addEventListener('click', startQuiz);
   }
 }
 
