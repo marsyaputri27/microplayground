@@ -3,7 +3,9 @@ const DEFAULT_MODELS = [
   process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   process.env.GEMINI_MODEL_FALLBACK || 'gemini-2.0-flash'
 ].filter(Boolean);
-const REQUEST_TIMEOUT = Number(process.env.GEMINI_TIMEOUT_MS) || 20000;
+
+// Naikkan default timeout ke 55 detik
+const REQUEST_TIMEOUT = Number(process.env.GEMINI_TIMEOUT_MS) || 55000;
 
 async function callGemini(model, prompt, apiKey) {
   const controller = new AbortController();
@@ -61,7 +63,9 @@ export default async function handler(req, res) {
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'Server misconfigured: API key not set' });
+    if (!apiKey) {
+      return res.status(500).json({ error: 'Server misconfigured: API key not set' });
+    }
 
     const errors = [];
     for (const model of DEFAULT_MODELS) {
