@@ -316,7 +316,8 @@
       const cleaned = await askGemini(systemPrompt + '\n\nPertanyaan: ' + qTrim);
       addBubble(cleaned || local.text, 'ai');
     } catch (e){
-      addBubble('Gagal memproses di server (timeout/limit). Menampilkan jawaban lokal.', 'err');
+      const reason = ((e && e.message) ? e.message : 'timeout/limit').replace(/\s+/g, ' ').slice(0, 140);
+      addBubble('Gagal memproses di server (' + reason + '). Menampilkan jawaban lokal.', 'err');
       addBubble(local.text, 'ai');
     } finally { updateQuotaUI(); }
   }
