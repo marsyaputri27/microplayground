@@ -48,19 +48,18 @@
       margin-top:8px;
       color:#e5e7eb;
       display:block;
-      width:100%; /* panjang penuh agar jelas */
+      width:100%;
       align-self:stretch;
-      white-space:pre-wrap; /* bungkus baris panjang */
+      white-space:pre-wrap;
       word-break:break-word;
       overflow:auto;
-      min-height:160px; /* pastikan cukup tinggi terlihat */
-      max-height:60vh; /* cukup tinggi untuk lihat banyak baris */
+      min-height:160px;
+      max-height:60vh;
       line-height:1.45;
       font-size:12.5px;
       box-shadow: inset 0 0 0 1px rgba(124,58,237,.15);
     }
     .chat .code { margin-left: 0; margin-right: 0; box-sizing: border-box; }
-    /* Typing indicator */
     .typing{ display:inline-flex; gap:6px; align-items:center; }
     .typing span{ width:6px; height:6px; border-radius:50%; background:#78d9ff; opacity:.6; animation: blink 1.2s infinite; box-shadow:0 0 8px rgba(34,211,238,.45); }
     .typing .d2{ animation-delay:.2s; }
@@ -75,8 +74,6 @@
     button.send svg{ display:block; }
     .small{ font-size:12px; color:var(--muted); margin-top:6px; }
     @media (max-width: 860px){ .card{ max-width:100%; border-radius:0; } .card::before{ border-radius:0; } }
-
-    /* Embed mode (when loaded inside panel) */
     body.embed .card{ background:transparent; border:0; border-radius:0; box-shadow:none; }
     body.embed .card::before{ display:none; }
     body.embed .head{ display:none; }
@@ -104,20 +101,22 @@
       <div class="row">
         <div class="input">
           <textarea id="msg" placeholder="Ketik pesan Anda..." spellcheck="false"></textarea>
-          <div class="small">Tips: Paste kode lengkap (ada <code>setup()</code>/<code>loop()</code>) agar bisa otomatis diperiksa & diperbaiki.</div>
+          <div class="small">Tips: Minta contoh wiring board + sensor, daftar komponen, ide project, atau cara belajar IoT.</div>
         </div>
         <button id="send" class="send" aria-label="Kirim"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M2 21l19-9L2 3l3 7 8 2-8 2-3 7z"/></svg></button>
       </div>
     </div>
-    
   </div>
 
   <script>
   // === RATE LIMIT (client-side) ===
   const RATE_ALL_KEY   = 'iot_assistant_rate_all';
   const RATE_CLOUD_KEY = 'iot_assistant_rate_cloud';
-  const MAX_ALL = 200;      // total pertanyaan/jam (UI)
-  const MAX_CLOUD = 100;    // panggilan ke server/jam
+  const MAX_ALL = 200;
+  const MAX_CLOUD = 100;
+
+  // Batas panjang prompt untuk dikirim ke Gemini
+  const MAX_PROMPT_CHARS = 8000;
 
   function bumpAndCheck(key, max){
     const now = Date.now();
@@ -146,7 +145,6 @@
     if (el) el.textContent = `Kuota: ${a.left}/${MAX_ALL} lokal · ${c.left}/${MAX_CLOUD} cloud (per jam)`;
   }
 
-  // === UI helpers ===
   const chat = document.getElementById('chat');
   const input = document.getElementById('msg');
   const sendBtn = document.getElementById('send');
@@ -168,6 +166,7 @@
     }
     chat.scrollTop = chat.scrollHeight;
   }
+
   function addCodeBlock(code){
     const pre = document.createElement('pre');
     pre.className = 'code';
@@ -175,6 +174,7 @@
     chat.appendChild(pre);
     chat.scrollTop = chat.scrollHeight;
   }
+
   function showTyping(){
     const el = document.createElement('div');
     el.className = 'msg ai typing';
@@ -185,14 +185,19 @@
   }
   function hideTyping(el){ if (el && el.parentNode) el.parentNode.removeChild(el); }
 
-  // === Deteksi cepat kode Arduino ===
   function isArduinoCode(text){
     const t = text.trim();
-    const signals = [/\bvoid\s+setup\s*\(/, /\bvoid\s+loop\s*\(/, /#include\s+<.*>/, /pinMode\s*\(/, /digitalWrite\s*\(/, /analog(Read|Write)\s*\(/];
+    const signals = [
+      /\bvoid\s+setup\s*\(/,
+      /\bvoid\s+loop\s*\(/,
+      /#include\s+<.*>/,
+      /pinMode\s*\(/,
+      /digitalWrite\s*\(/,
+      /analog(Read|Write)\s*\(/
+    ];
     return signals.some(r => r.test(t));
   }
 
-  // === Analisis ringan Arduino (lokal) ===
   function analyzeArduino(src){
     const report = { issues: [], tips: [], fixes: [], corrected: null, explain: [] };
     const text = src;
@@ -240,11 +245,11 @@
     return report;
   }
 
-  // === Jawaban lokal IoT ringkas (fallback) ===
   function isIoTTopic(text){
     const t = text.toLowerCase();
     return /(iot|arduino|esp32|esp8266|pico|sensor|mqtt|broker|wifi|lora|http|coap|blynk|thingspeak|node[- ]?red)/.test(t);
   }
+
   function basicIoTAnswer(q){
     const t = q.toLowerCase();
     const items = [
@@ -256,14 +261,15 @@
       { re: /millis|non.?blocking|delay\b/, ans: 'Gunakan millis() untuk tugas periodik agar loop() tidak macet.' },
     ];
     for (const it of items) if (it.re.test(t)) return { text: it.ans, matched: true };
-    if (isIoTTopic(t)) return { text: 'Topik IoT terdeteksi. Jelaskan sensor/board/protokol yang kamu mau atau tempel kode untuk dicek.', matched:false };
-    return { text: 'Bisa tanya konsep IoT atau tempel kode Arduino/ESP32 untuk diperiksa.', matched:false };
+    if (isIoTTopic(t)) return { text: 'Topik IoT terdeteksi. Jelaskan sensor/board/protokol, wiring, komponen, project, atau cara belajar yang kamu mau.', matched:false };
+    return { text: 'Bisa tanya wiring Arduino/ESP32, daftar komponen, ide project IoT, atau tips belajar.', matched:false };
   }
 
   // === PANGGIL BACKEND PROXY (AMAN) ===
   async function askGemini(prompt){
+    const CLIENT_TIMEOUT_MS = 55000;
     const ctl = new AbortController();
-    const t = setTimeout(()=> ctl.abort('timeout'), 25000); // 25 detik
+    const t = setTimeout(()=> ctl.abort('client-timeout'), CLIENT_TIMEOUT_MS);
     try {
       const res = await fetch('/api/gemini', {
         method: 'POST',
@@ -277,7 +283,9 @@
       }
       const data = await res.json();
       return (data?.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
-    } finally { clearTimeout(t); }
+    } finally {
+      clearTimeout(t);
+    }
   }
 
   // === Jawab pertanyaan ===
@@ -291,25 +299,50 @@
       if (r.fixes.length)   lines.push('Perbaikan otomatis: ' + r.fixes.join('; '));
       const text = lines.join('\n');
       if (text) addBubble(text, 'ai');
-      if (r.corrected) { addBubble('Contoh perbaikan (cek kembali):', 'ai'); addCodeBlock(r.corrected); }
+      if (r.corrected) {
+        addBubble('Contoh perbaikan (cek kembali):', 'ai');
+        addCodeBlock(r.corrected);
+      }
       return;
     }
 
-    const qTrim = query.trim();
+    let qTrim = query.trim();
+    let truncated = false;
+    if (qTrim.length > MAX_PROMPT_CHARS) {
+      qTrim = qTrim.slice(0, MAX_PROMPT_CHARS);
+      truncated = true;
+    }
+
     const local = basicIoTAnswer(qTrim);
 
-    if (!cloudToggle.checked) { addBubble(local.text, 'ai'); return; }
+    if (truncated) {
+      addBubble(
+        'Kode atau pesan terlalu panjang. Hanya bagian awal yang dianalisis. ' +
+        'Untuk hasil lebih spesifik, kirim bagian yang error saja (misalnya satu fungsi atau blok kode).',
+        'sys'
+      );
+    }
+
+    if (!cloudToggle.checked) {
+      addBubble(local.text, 'ai');
+      return;
+    }
 
     const qc = bumpAndCheck(RATE_CLOUD_KEY, MAX_CLOUD);
-    if (!qc.ok) { addBubble('Kuota cloud habis, pakai jawaban lokal.', 'sys'); addBubble(local.text, 'ai'); return; }
+    if (!qc.ok) {
+      addBubble('Kuota cloud habis, pakai jawaban lokal.', 'sys');
+      addBubble(local.text, 'ai');
+      return;
+    }
 
     const systemPrompt = [
-      'Kamu asisten spesialis IoT dan Arduino IDE (C/C++).',
+      'Kamu asisten IoT yang fokus memberi contoh wiring, daftar komponen, ide project, dan panduan belajar.',
       'Aturan:',
-      '1) Jika user memberi kode, perbaiki dan jelaskan singkat; jawaban kode selalu dalam blok ```cpp … ```.',
-      '2) Untuk wiring, tulis ringkas: board, sensor, pin, tegangan, risiko umum.',
-      '3) Jika info kurang, sebutkan apa yang dibutuhkan.',
-      '4) Jawab ringkas dan jelas, bahasa Indonesia.'
+      '1) Jelaskan wiring ringkas: board, sensor, pin, tegangan, risiko umum.',
+      '2) Jika diminta komponen atau project, sebutkan list dan langkah singkat.',
+      '3) Untuk cara belajar, berikan roadmap serta sumber singkat.',
+      '4) Jika user meminta perbaikan kode, jelaskan bahwa layanan ini tidak memperbaiki kode.',
+      '5) Jawab ringkas dan jelas, bahasa Indonesia.'
     ].join('\n');
 
     try {
@@ -319,25 +352,38 @@
       const reason = ((e && e.message) ? e.message : 'timeout/limit').replace(/\s+/g, ' ').slice(0, 140);
       addBubble('Gagal memproses di server (' + reason + '). Menampilkan jawaban lokal.', 'err');
       addBubble(local.text, 'ai');
-    } finally { updateQuotaUI(); }
+    } finally {
+      updateQuotaUI();
+    }
   }
 
-  function greet(){ addBubble('Halo! Saya asisten IoT. Tanyakan hal tentang Arduino, ESP32, sensor, atau paste kode untuk diperbaiki.', 'ai'); }
+  function greet(){
+    addBubble('Halo! Saya asisten IoT. Bisa bantu contoh wiring Arduino/ESP32, daftar komponen, ide project, dan cara belajar.', 'ai');
+  }
 
   async function onSend(){
     const q = (input.value || '').trim();
     if (!q) return;
     const r = bumpAndCheck(RATE_ALL_KEY, MAX_ALL);
-    if (!r.ok) { addBubble('Batas pertanyaan/jam tercapai. Coba lagi nanti.', 'sys'); return; }
+    if (!r.ok) {
+      addBubble('Batas pertanyaan/jam tercapai. Coba lagi nanti.', 'sys');
+      return;
+    }
     addBubble(q, 'me');
     input.value = '';
     sendBtn.disabled = true;
     const typing = showTyping();
-    try { await answer(q); } finally { hideTyping(typing); sendBtn.disabled = false; }
+    try { await answer(q); }
+    finally { hideTyping(typing); sendBtn.disabled = false; }
   }
 
   sendBtn.addEventListener('click', onSend);
-  input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onSend(); }});
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSend();
+    }
+  });
 
   updateQuotaUI();
   greet();
